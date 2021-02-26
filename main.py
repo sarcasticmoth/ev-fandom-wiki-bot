@@ -9,9 +9,6 @@ logging.getLogger('mainLogger')
 
 token = os.getenv('DISCORD_BOT_TOKEN')
 bot = commands.Bot(command_prefix='$test ', pm_help=False)
-bot.add_cog(EasterEggCog(bot))
-bot.add_cog(SettingsCog(bot))
-
 
 # EVENTS
 
