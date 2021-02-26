@@ -12,7 +12,7 @@ logging.config.fileConfig('logging.conf')
 logging.getLogger('mainLogger')
 
 token = os.getenv('DISCORD_BOT_TOKEN')
-bot = commands.Bot(command_prefix='$wiki ', pm_help=False)
+bot = commands.Bot(command_prefix='$w ', pm_help=False)
 bot.add_cog(SearchCog(bot))
 bot.add_cog(SettingsCog(bot))
 
@@ -59,16 +59,6 @@ async def test(ctx, *args):
 # async def help_command(ctx):
 #     logging.info("{} wrote message: $wiki help")
 #     await ctx.send(commands.bot.HelpCommand)
-
-
-@bot.command(name='overview', help='$wiki overview | returns details of the wiki site')
-async def overview(ctx):
-    logging.info("{} wrote message: $wiki overview")
-
-
-@bot.command(name='random', help='$wiki random | returns a random wiki page')
-async def random_page(ctx):
-    logging.info("{} wrote message: $wiki random")
 
 
 # UTILITY
