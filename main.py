@@ -5,17 +5,15 @@ import discord
 from discord.ext import commands
 from sys import exc_info
 
-from EasterEggCog import EasterEggCog
 from SettingsCog import SettingsCog
+from SearchCog import SearchCog
 
 logging.config.fileConfig('logging.conf')
 logging.getLogger('mainLogger')
 
 token = os.getenv('DISCORD_BOT_TOKEN')
-client_user = os.getenv('CLIENT_USER')
-client_id = os.getenv('CLIENT_ID')
 bot = commands.Bot(command_prefix='$wiki ', pm_help=False)
-bot.add_cog(EasterEggCog(bot))
+bot.add_cog(SearchCog(bot))
 bot.add_cog(SettingsCog(bot))
 
 
@@ -71,20 +69,6 @@ async def overview(ctx):
 @bot.command(name='random', help='$wiki random | returns a random wiki page')
 async def random_page(ctx):
     logging.info("{} wrote message: $wiki random")
-
-
-@bot.command(name='search', help='$wiki search <term> | searches the contents of all wiki pages for term')
-async def search_pages(ctx, *args):
-    logging.info("{} wrote message: $wiki search {}".format(ctx.author, ' '.join(args)))
-    search_content = ' '.join(args)
-    await ctx.send('searching all pages for [{}]'.format(search_content))
-
-
-@bot.command(name='category', help='$wiki category <term> | returns list of pages with category')
-async def search_category(ctx, *args):
-    logging.info("{} wrote message: $wiki category {}".format(ctx.author, ' '.join(args)))
-    search_content = ' '.join(args)
-    await ctx.send('searching pages with category [{}]'.format(search_content))
 
 
 # UTILITY
