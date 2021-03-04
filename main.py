@@ -1,12 +1,12 @@
 import os
 import logging
 import logging.config
-import discord
 from discord.ext import commands
 from sys import exc_info
 
-from SettingsCog import SettingsCog
-from SearchCog import SearchCog
+from Commands.Cog.SettingsCog import SettingsCog
+from Commands.Cog.SearchCog import SearchCog
+from Commands.Cog.TestCog import TestCog
 
 logging.config.fileConfig('logging.conf')
 logging.getLogger('mainLogger')
@@ -15,7 +15,7 @@ token = os.getenv('DISCORD_BOT_TOKEN')
 bot = commands.Bot(command_prefix='$w ', pm_help=False)
 bot.add_cog(SearchCog(bot))
 bot.add_cog(SettingsCog(bot))
-
+bot.add_cog(TestCog(bot))
 
 # EVENTS
 
