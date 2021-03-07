@@ -7,6 +7,8 @@ from Commands.Entities.Category import CategoryMember, CategoryRoot, CategoryQue
 
 logging.getLogger('mainLogger')
 
+next_results = False
+
 
 class TestCog(commands.Cog, name='Test'):
     def __init__(self, bot):
@@ -30,34 +32,22 @@ class TestCog(commands.Cog, name='Test'):
                 payload['cmcontinue'] = cm_continue
 
             r = requests.get('https://alohomora.fandom.com/api.php', params=payload)
-            # await ctx.send(r.url)
 
             decoded_list = json.loads(r.text)
-
-            cat_members = []
-
-            for row in decoded_list['query']['categorymembers']:
-                cat_members.append(CategoryMember(row['pageid'], row['ns'], row['title']))
-
-            cat_root = CategoryRoot(decoded_list['batchcomplete'], CategoryQuery(cat_members))
-            result_list = []
-
-            for character in cat_root.category_query.category_members:
-                url_base = 'https://alohomora.fandom.com/wiki/'
-                updated_char_title = character.title.replace(' ', '_')
-                updated_url = '<' + url_base + updated_char_title + '>'
-                result_list.append(updated_url)
-
-            result_list = '\n'.join(result_list)
+            result_list = self.RequestAndReturn(decoded_list)
 
             await ctx.send(result_list)
             logging.info(result_list)
 
-            # reaction = await self.bot.wait_for_reaction(['\N{TRACK_NEXT}'])
-            # if decoded_list.has_key('continue') is not None and reaction:
             if 'continue' in decoded_list.keys():
                 cm_continue = decoded_list['continue']['cmcontinue']
+                await ctx.send('react with ⏭️ for more results')
             else:
+                done = True
+
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=300)
+
+            if str(reaction) != '⏭️':
                 done = True
 
         await ctx.send("end query")
@@ -80,34 +70,46 @@ class TestCog(commands.Cog, name='Test'):
                 payload['cmcontinue'] = cm_continue
 
             r = requests.get('https://alohomora.fandom.com/api.php', params=payload)
-            # await ctx.send(r.url)
 
             decoded_list = json.loads(r.text)
-
-            cat_members = []
-
-            for row in decoded_list['query']['categorymembers']:
-                cat_members.append(CategoryMember(row['pageid'], row['ns'], row['title']))
-
-            cat_root = CategoryRoot(decoded_list['batchcomplete'], CategoryQuery(cat_members))
-            result_list = []
-
-            for character in cat_root.category_query.category_members:
-                url_base = 'https://alohomora.fandom.com/wiki/'
-                updated_char_title = character.title.replace(' ', '_')
-                updated_url = '<' + url_base + updated_char_title + '>'
-                result_list.append(updated_url)
-
-            result_list = '\n'.join(result_list)
+            result_list = self.RequestAndReturn(decoded_list)
 
             await ctx.send(result_list)
             logging.info(result_list)
 
-            # reaction = await self.bot.wait_for_reaction(['\N{TRACK_NEXT}'])
-            # if decoded_list.has_key('continue') is not None and reaction:
             if 'continue' in decoded_list.keys():
                 cm_continue = decoded_list['continue']['cmcontinue']
+                await ctx.send('react with ⏭️ for more results')
             else:
                 done = True
 
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=300)
+
+            if str(reaction) != '⏭️':
+                done = True
+
         await ctx.send("end query")
+
+    @commands.Cog.listener()
+    async def on_reaction(self, message):
+        if message.author == self.user:
+            return
+
+    @staticmethod
+    def RequestAndReturn(decoded_list):
+        cat_members = []
+
+        for row in decoded_list['query']['categorymembers']:
+            cat_members.append(CategoryMember(row['pageid'], row['ns'], row['title']))
+
+        cat_root = CategoryRoot(decoded_list['batchcomplete'], CategoryQuery(cat_members))
+        result_list = []
+
+        for character in cat_root.category_query.category_members:
+            url_base = 'https://alohomora.fandom.com/wiki/'
+            updated_char_title = character.title.replace(' ', '_')
+            updated_url = '<' + url_base + updated_char_title + '>'
+            result_list.append(updated_url)
+
+        result_list = '\n'.join(result_list)
+        return result_list
