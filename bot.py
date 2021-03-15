@@ -17,6 +17,7 @@ bot = commands.Bot(command_prefix='$w ', pm_help=False)
 # bot.add_cog(SettingsCog(bot))
 bot.add_cog(TestCog(bot))
 
+
 # EVENTS
 
 @bot.event

@@ -1,3 +1,6 @@
+import asyncio
+
+import discord
 from discord.ext import commands
 import requests
 import logging
@@ -14,10 +17,10 @@ class TestCog(commands.Cog, name='Test'):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='all_chars', help='$w all_chars')
+    @commands.command(name='all_chars', help='$w allchars')
     async def test_get_all_chars(self, ctx, *args):
-        logging.info("{} wrote message: $w all_chars".format(ctx.author.display_name))
-        await ctx.send("{} wrote message: $w all_chars".format(ctx.author.display_name))
+        logging.info("{} wrote message: $w allchars".format(ctx.author.display_name))
+        await ctx.send("{} wrote message: $w allchars".format(ctx.author.display_name))
         done = False
         cm_continue = ''
 
@@ -45,7 +48,7 @@ class TestCog(commands.Cog, name='Test'):
             else:
                 done = True
 
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=300)
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=30)
 
             if str(reaction) != '⏭️':
                 done = True
@@ -54,8 +57,9 @@ class TestCog(commands.Cog, name='Test'):
 
     @commands.command(name='category', help='$w category <term>')
     async def test_get_category(self, ctx, *args):
-        logging.info("{} wrote message: $w category {}".format(ctx.author.display_name, ' '.join(args)))
-        await ctx.send("{} wrote message: $w category {}".format(ctx.author.display_name, ' '.join(args)))
+        term = ' '.join(args)
+        logging.info("{} wrote message: $w category {}".format(ctx.author.display_name, term))
+        await ctx.send("{} wrote message: $w category {}".format(ctx.author.display_name, term))
         done = False
         cm_continue = ''
 
@@ -63,7 +67,7 @@ class TestCog(commands.Cog, name='Test'):
             payload = dict(action='query',
                            prop='categories',
                            list='categorymembers',
-                           cmtitle='Category:{}'.format(' '.join(args)),
+                           cmtitle='Category:{}'.format(term),
                            format='json', cmlimit='10')
 
             if len(cm_continue) > 1:
@@ -74,6 +78,10 @@ class TestCog(commands.Cog, name='Test'):
             decoded_list = json.loads(r.text)
             result_list = self.RequestAndReturn(decoded_list)
 
+            if len(result_list) < 1:
+                await ctx.send("No results for category [{}]".format(term))
+                return
+
             await ctx.send(result_list)
             logging.info(result_list)
 
@@ -83,12 +91,36 @@ class TestCog(commands.Cog, name='Test'):
             else:
                 done = True
 
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=300)
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add', timeout=30)
 
-            if str(reaction) != '⏭️':
-                done = True
+                if str(reaction) != '⏭️':
+                    done = True
+            except asyncio.TimeoutError:
+                logging.info("--end query--")
+                await ctx.send("--end query--")
 
         await ctx.send("end query")
+
+    @commands.command(name='embeds')
+    @commands.guild_only()
+    async def example_embed(self, ctx):
+        """A simple command which showcases the use of embeds.
+        Have a play around and visit the Visualizer."""
+
+        embed = discord.Embed(title='Example Embed',
+                              description='Showcasing the use of Embeds...\nSee the visualizer for more info.',
+                              colour=0x98FB98)
+        embed.set_author(name='MysterialPy',
+                         url='https://gist.github.com/MysterialPy/public',
+                         icon_url='http://i.imgur.com/ko5A30P.png')
+        embed.set_image(url='https://cdn.discordapp.com/attachments/84319995256905728/252292324967710721/embed.png')
+
+        embed.add_field(name='Embed Visualizer', value='[Click Here!](https://leovoel.github.io/embed-visualizer/)')
+        embed.add_field(name='Command Invoker', value=ctx.author.mention)
+        embed.set_footer(text='Made in Python with discord.py@rewrite', icon_url='http://i.imgur.com/5BFecvA.png')
+
+        await ctx.send(content='**A simple Embed for discord.py@rewrite in cogs.**', embed=embed)
 
     @commands.Cog.listener()
     async def on_reaction(self, message):

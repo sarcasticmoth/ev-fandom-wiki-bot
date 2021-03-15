@@ -1,1 +1,1 @@
-worker: python fandomwiki.py
+worker: python bot.py
